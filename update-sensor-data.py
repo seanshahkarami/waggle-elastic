@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import argparse
-from beehive import Beehive
 import datetime
 import requests
 from decoders import decode_lines
 from elasticsearch import Elasticsearch
+from waggle.beehive import Beehive
 
 
 parser = argparse.ArgumentParser()

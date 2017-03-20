@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
-from beehive import Beehive
 from elasticsearch import Elasticsearch
+from waggle.beehive import Beehive
 
 beehive = Beehive('beehive1.mcs.anl.gov')
 nodes = beehive.nodes()
