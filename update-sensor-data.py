@@ -2,7 +2,8 @@
 import argparse
 import requests
 from decoders import decode_lines
-from elasticsearch import Elasticsearch
+import elasticsearch
+import elasticsearch.helpers
 import logging
 
 logging.basicConfig(level=logging.ERROR)
@@ -16,10 +17,9 @@ parser.add_argument('--before')
 
 args = parser.parse_args()
 
-es = Elasticsearch()
+es = elasticsearch.Elasticsearch()
 
 q = {
-    "size": 2500,
     "query": {
         "bool": {
             "must": []
@@ -60,19 +60,21 @@ elif args.before:
         }
     })
 
-results = es.search('datasets', 'dataset', q)
-datasets = [r['_source'] for r in results['hits']['hits']]
 
-for number, dataset in enumerate(datasets):
+count = es.count('datasets', 'dataset', q)['count']
+
+for i, result in enumerate(elasticsearch.helpers.scan(es, index='datasets', doc_type='dataset', query=q)):
+    dataset = result['_source']
+
     index = 'data-{}-{}.txt'.format(dataset['node_id'], dataset['date'].replace('/', ''))
 
     r = requests.get(dataset['url'])
 
     if r.status_code != 200:
-        print('failed {} [{} of {}]'.format(index, number + 1, len(datasets)))
+        print('failed {} [{} of {}]'.format(index, i+1, count))
         continue
 
-    print('got {} [{} of {}]'.format(index, number + 1, len(datasets)))
+    print('added {} [{} of {}]'.format(index, i+1, count))
 
     body = decode_lines(dataset, map(bytes.decode, r.iter_lines()))
 
