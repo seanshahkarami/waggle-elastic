@@ -11,9 +11,9 @@ logging.basicConfig(level=logging.ERROR)
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--id')
-parser.add_argument('--after')
-parser.add_argument('--before')
+parser.add_argument('-i', '--id')
+parser.add_argument('-a', '--after')
+parser.add_argument('-b', '--before')
 
 args = parser.parse_args()
 
