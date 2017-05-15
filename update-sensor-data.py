@@ -19,46 +19,21 @@ args = parser.parse_args()
 
 es = elasticsearch.Elasticsearch()
 
-q = {
-    "query": {
-        "bool": {
-            "must": []
-        },
-    },
-}
+q = {'query': {'bool': {'must': []}}}
 
 if args.id:
-    q['query']['bool']['must'].append({
-        'wildcard': {
-            'node_id': args.id
-        }
-    })
+    q['query']['bool']['must'].append({'wildcard': {'node_id': args.id}})
 
-if args.after and args.before:
-    q['query']['bool']['must'].append({
-        'range': {
-            'date': {
-                'gte': args.after,
-                'lt': args.before,
-            }
-        }
-    })
-elif args.after:
-    q['query']['bool']['must'].append({
-        'range': {
-            'date': {
-                'gte': args.after,
-            }
-        }
-    })
-elif args.before:
-    q['query']['bool']['must'].append({
-        'range': {
-            'date': {
-                'lt': args.before,
-            }
-        }
-    })
+date_query = {}
+
+if args.after:
+    date_query['gte'] = args.after
+
+if args.before:
+    date_query['lt'] = args.before
+
+if date_query:
+    q['query']['bool']['must'].append({'range': {'date': date_query}})
 
 
 count = es.count('datasets', 'dataset', q)['count']
