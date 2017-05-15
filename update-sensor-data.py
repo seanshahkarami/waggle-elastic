@@ -62,8 +62,9 @@ elif args.before:
 
 
 count = es.count('datasets', 'dataset', q)['count']
+scan = elasticsearch.helpers.scan(es, index='datasets', doc_type='dataset', query=q)
 
-for i, result in enumerate(elasticsearch.helpers.scan(es, index='datasets', doc_type='dataset', query=q)):
+for i, result in enumerate(scan):
     dataset = result['_source']
 
     index = 'data-{}-{}.txt'.format(dataset['node_id'], dataset['date'].replace('/', ''))
