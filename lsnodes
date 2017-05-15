@@ -2,6 +2,8 @@
 import requests
 import sys
 
+template = '{:<14} {:<6} {:<38} {:<24}'
+
 
 def truncate(s, maxlen):
     if len(s) <= maxlen:
@@ -13,10 +15,12 @@ def truncate(s, maxlen):
 q = ' '.join(sys.argv[1:])
 r = requests.get('http://localhost:9200/waggle/node/_search?q={}'.format(q))
 
+print(template.format('node_id', 'name', 'address', 'rssh_port'))
+
 for hit in r.json()['hits']['hits']:
     node = hit['_source']
 
-    print('{:<14} {:<6} {:<38} {:<24}'.format(truncate(node['node_id'], 12),
-                                              truncate(node['name'], 4),
-                                              truncate(node['location'], 36),
-                                              node['reverse_ssh_port']))
+    print(template.format(truncate(node['node_id'], 12),
+                          truncate(node['name'], 4),
+                          truncate(node['address'], 36),
+                          node['reverse_ssh_port']))

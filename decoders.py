@@ -3,6 +3,7 @@ from datetime import datetime
 import binascii
 import re
 import json
+import traceback
 
 
 def normalize(x):
@@ -80,8 +81,8 @@ def decode_lines(dataset, lines):
 
         try:
             doc['values'] = normalize(decoder(data))
-        except AssertionError:
-            continue
+        except:
+            doc['exc'] = traceback.format_exc()
 
         index = {
             'index': {
