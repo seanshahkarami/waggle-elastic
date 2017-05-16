@@ -40,7 +40,7 @@ def actions():
 
         yield {
             '_op_type': 'update',
-            '_index': 'waggle',
+            '_index': 'nodes',
             '_type': 'node',
             '_id': node['node_id'],
             'doc': doc,
