@@ -6,6 +6,33 @@ import json
 import traceback
 
 
+class CoresenseDecoder:
+
+    def decode(self, data):
+        from waggle.coresense.utils import decode_frame
+        return decode_frame(data)
+
+
+class AlphasenseDecoder:
+
+    def decode(self, data):
+        from alphasense.opc import decode18
+        return decode18(data)
+
+
+class GPSDecoder:
+
+    def decode(self, data):
+        return {'string': data.decode()}
+
+
+decoders = {
+    ('coresense', '3', 'frame'): CoresenseDecoder(),
+    ('alphasense', '1', 'histogram'): AlphasenseDecoder(),
+    ('gps', '1', 'gps'): GPSDecoder(),
+}
+
+
 def normalize(x):
     if isinstance(x, int):
         return x
@@ -14,33 +41,12 @@ def normalize(x):
     if isinstance(x, str):
         return re.sub('\W+', '_', x).lower()
     if isinstance(x, tuple):
-        return tuple(map(normalize, x))
+        return tuple(normalize(v) for v in x)
     if isinstance(x, list):
-        return list(map(normalize, x))
+        return list(normalize(v) for v in x)
     if isinstance(x, dict):
         return dict((normalize(k), normalize(v)) for k, v in x.items())
     raise ValueError('cannot normalize {}'.format(x))
-
-
-def decode_coresense_data(data):
-    from waggle.coresense.utils import decode_frame
-    return decode_frame(data)
-
-
-def decode_alphasense_data(data):
-    from alphasense.opc import decode18
-    return decode18(data)
-
-
-def decode_gps_data(data):
-    return {'string': data.decode()}
-
-
-decoders = {
-    ('coresense', '3', 'frame'): decode_coresense_data,
-    ('alphasense', '1', 'histogram'): decode_alphasense_data,
-    ('gps', '1', 'gps'): decode_gps_data,
-}
 
 
 def decode_lines(dataset, lines):
@@ -80,7 +86,7 @@ def decode_lines(dataset, lines):
             continue
 
         try:
-            doc['values'] = normalize(decoder(data))
+            doc['values'] = normalize(decoder.decode(data))
         except:
             doc['exc'] = traceback.format_exc()
 
