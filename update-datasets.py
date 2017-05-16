@@ -10,19 +10,20 @@ datasets = r.json()
 bulk = []
 
 for dataset in datasets:
+    if dataset['version'] != '2raw':
+        continue
 
     index = {
         'index': {
             '_index': 'datasets',
             '_type': 'dataset',
-            '_id': '{}-{}-{}'.format(dataset['node_id'], dataset['date'].replace('-', ''), dataset['version'])
+            '_id': '{}-{}'.format(dataset['node_id'], dataset['date'].replace('-', ''))
         }
     }
 
     doc = {
         'date': dataset['date'].replace('-', '/'),
         'node_id': dataset['node_id'],
-        'version': dataset['version'],
         'url': dataset['url'],
     }
 

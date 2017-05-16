@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
-from elasticsearch import Elasticsearch
+import elasticsearch
+import elasticsearch.helpers
 from waggle.beehive import Beehive
 
 locations = {
@@ -52,5 +53,5 @@ for node in nodes:
 
 body = ''.join(bulk)
 
-es = Elasticsearch()
+es = elasticsearch.Elasticsearch()
 es.bulk(body)
