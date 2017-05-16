@@ -4,19 +4,13 @@ import requests
 from decoders import decode_lines
 import elasticsearch
 import elasticsearch.helpers
-import logging
-from datetime import datetime
-
-logging.basicConfig(level=logging.ERROR)
 
 
 parser = argparse.ArgumentParser()
-
 parser.add_argument('-i', '--id')
 parser.add_argument('-a', '--after')
 parser.add_argument('-b', '--before')
-parser.add_argument('-r', '--refresh')
-
+parser.add_argument('-r', '--refresh', action='store_true')
 args = parser.parse_args()
 
 es = elasticsearch.Elasticsearch()
@@ -37,6 +31,11 @@ if args.before:
 if date_query:
     q['query']['bool']['must'].append({'range': {'date': date_query}})
 
+if not args.refresh:
+    q['query']['bool']['must_not'] = {
+        'term': {'indexed': True}
+    }
+
 count = es.count('datasets', 'dataset', q)['count']
 scan = elasticsearch.helpers.scan(es, index='datasets', doc_type='dataset', query=q)
 
@@ -44,10 +43,6 @@ for i, result in enumerate(scan):
     dataset = result['_source']
 
     index = 'data-{}-{}'.format(dataset['node_id'], dataset['date'].replace('/', ''))
-
-    if not args.refresh and dataset.get('indexed', False):
-        print('skipped {} [{} of {}]'.format(index, i+1, count))
-        continue
 
     r = requests.get(dataset['url'])
 
