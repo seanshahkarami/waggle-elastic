@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import json
 import elasticsearch
 import elasticsearch.helpers
 from waggle.beehive import Beehive
@@ -11,47 +10,39 @@ locations = {
   }
 }
 
-beehive = Beehive('beehive1.mcs.anl.gov')
-nodes = beehive.nodes()
 
-bulk = []
+def actions():
+    beehive = Beehive('beehive1.mcs.anl.gov')
+    nodes = beehive.nodes()
 
-for node in nodes:
-    index = {
-        'index': {
+    for node in nodes:
+        doc = {
+            '_op_type': 'index',
             '_index': 'waggle',
             '_type': 'node',
-            '_id': node['node_id']
+            '_id': node['node_id'],
+            'node_id': node['node_id'],
+            'name': node['name'],
+            'description': node['description'],
+            'address': node['location'],
+            'groups': node['groups'],
+            'opmode': node['opmode'],
         }
-    }
 
-    doc = {
-        'node_id': node['node_id'],
-        'name': node['name'],
-        'description': node['description'],
-        'address': node['location'],
-        'groups': node['groups'],
-        'opmode': node['opmode'],
-    }
+        try:
+            location = locations[node['node_id']]
+            doc['address'] = location['address']
+            doc['location'] = location['location']
+        except KeyError:
+            pass
 
-    try:
-        location = locations[node['node_id']]
-        doc['address'] = location['address']
-        doc['location'] = location['location']
-    except KeyError:
-        pass
+        try:
+            doc['reverse_ssh_port'] = node['reverse_ssh_port']
+        except KeyError:
+            pass
 
-    try:
-        doc['reverse_ssh_port'] = node['reverse_ssh_port']
-    except KeyError:
-        pass
+        yield doc
 
-    bulk.append(json.dumps(index))
-    bulk.append('\n')
-    bulk.append(json.dumps(doc))
-    bulk.append('\n')
-
-body = ''.join(bulk)
 
 es = elasticsearch.Elasticsearch()
-es.bulk(body)
+elasticsearch.helpers.bulk(es, actions())
