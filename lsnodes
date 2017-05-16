@@ -13,7 +13,7 @@ def truncate(s, maxlen):
 
 
 q = ' '.join(sys.argv[1:])
-r = requests.get('http://localhost:9200/waggle/node/_search?q={}'.format(q))
+r = requests.get('http://localhost:9200/nodes/node/_search?q={}'.format(q))
 
 print(template.format('node_id', 'name', 'address', 'rssh_port'))
 
