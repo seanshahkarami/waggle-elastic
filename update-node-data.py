@@ -11,10 +11,11 @@ locations = {
 }
 
 
-def actions():
-    beehive = Beehive('beehive1.mcs.anl.gov')
-    nodes = beehive.nodes()
+beehive = Beehive('beehive1.mcs.anl.gov')
+nodes = beehive.nodes()
 
+
+def actions():
     for node in nodes:
         doc = {
             '_op_type': 'index',
