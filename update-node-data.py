@@ -18,10 +18,6 @@ nodes = beehive.nodes()
 def actions():
     for node in nodes:
         doc = {
-            '_op_type': 'index',
-            '_index': 'waggle',
-            '_type': 'node',
-            '_id': node['node_id'],
             'node_id': node['node_id'],
             'name': node['name'],
             'description': node['description'],
@@ -42,7 +38,14 @@ def actions():
         except KeyError:
             pass
 
-        yield doc
+        yield {
+            '_op_type': 'update',
+            '_index': 'waggle',
+            '_type': 'node',
+            '_id': node['node_id'],
+            'doc': doc,
+            'doc_as_upsert': True,
+        }
 
 
 es = elasticsearch.Elasticsearch()
