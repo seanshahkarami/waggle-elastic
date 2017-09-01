@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 
-def update_datasets():
+def update_datasets(es):
     r = requests.get('http://beehive1.mcs.anl.gov/api/datasets')
     datasets = r.json()
 
@@ -26,14 +26,13 @@ def update_datasets():
 
             yield {
                 '_op_type': 'update',
-                '_index': 'datasets',
+                '_index': 'dataset',
                 '_type': 'dataset',
                 '_id': '{}-{}'.format(dataset['node_id'], dataset['date'].replace('-', '')),
                 'doc': doc,
                 'doc_as_upsert': True,
             }
 
-    es = elasticsearch.Elasticsearch()
     elasticsearch.helpers.bulk(es, actions())
 
 
@@ -45,9 +44,9 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--refresh', action='store_true')
     args = parser.parse_args()
 
-    update_datasets()
-
     es = elasticsearch.Elasticsearch()
+
+    update_datasets(es)
 
     q = {'query': {'bool': {'must': []}}}
 
@@ -70,8 +69,8 @@ if __name__ == '__main__':
             'term': {'indexed': True}
         }
 
-    count = es.count('datasets', 'dataset', q)['count']
-    scan = elasticsearch.helpers.scan(es, index='datasets', doc_type='dataset', query=q)
+    count = es.count('dataset', 'dataset', q)['count']
+    scan = elasticsearch.helpers.scan(es, index='dataset', doc_type='dataset', query=q)
 
     for i, result in enumerate(scan):
         dataset = result['_source']
@@ -91,7 +90,7 @@ if __name__ == '__main__':
         if body:
             es.bulk(body)
 
-        es.update(index='datasets', doc_type='dataset', id=result['_id'], body={
+        es.update(index='dataset', doc_type='dataset', id=result['_id'], body={
             'doc': {
                 'indexed': True
             }

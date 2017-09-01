@@ -64,6 +64,8 @@ def decode_lines(dataset, lines):
         except ValueError:
             timestamp = datetime.strptime(fields[0], '%Y-%m-%d %H:%M:%S')
 
+        index = timestamp.strftime('sensors-%Y.%m.%d')
+
         doc['timestamp'] = timestamp.strftime('%Y/%m/%d %H:%M:%S')
         doc['node_id'] = node_id
 
@@ -92,7 +94,7 @@ def decode_lines(dataset, lines):
 
         index = {
             'index': {
-                '_index': 'sensor',
+                '_index': index,
                 '_type': '{}-{}'.format(plugin_name, plugin_version),
                 '_id': '{}'.format('-'.join([node_id, plugin_name, plugin_version, str(int(timestamp.timestamp()))])),
             }
